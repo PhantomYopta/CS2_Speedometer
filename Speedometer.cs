@@ -17,6 +17,29 @@ public class Speedometer : BasePlugin
             _usersSettings[slot + 1] = new UsersSettings { IsShowSpeed = true, CountJumps = 0 };
         }));
         RegisterListener<Listeners.OnClientDisconnectPost>(slot => _usersSettings[slot + 1] = null);
+        RegisterListener<Listeners.OnMapStart>((name =>
+        {
+            RegisterEventHandler<EventPlayerJump>(((@event, info) =>
+            {
+                var controller = @event.Userid;
+                var client = controller.EntityIndex!.Value.Value;
+
+                if (client == IntPtr.Zero) return HookResult.Continue;
+                _usersSettings[client]!.CountJumps++;
+
+                return HookResult.Continue;
+            }));
+        }));
+        RegisterEventHandler<EventRoundEnd>(((@event, info) =>
+        {
+            var playerEntities = Utilities.FindAllEntitiesByDesignerName<CCSPlayerController>("cs_player_controller");
+            foreach (var player in playerEntities)
+            {
+                var client = player.EntityIndex!.Value.Value;
+                _usersSettings[client]!.CountJumps = 0;
+            }
+            return HookResult.Continue;
+        }));
         RegisterListener<Listeners.OnTick>(() =>
         {
             for (var i = 1; i <= Server.MaxPlayers; ++i)
@@ -27,11 +50,9 @@ public class Speedometer : BasePlugin
                 {
                     var buttons = player.Pawn.Value.MovementServices!.ButtonState.Value;
                     var client = player.EntityIndex!.Value.Value;
-                    if(client == IntPtr.Zero) return;
-                    if(!_usersSettings[client]!.IsShowSpeed) return;
-                    var gamerules = Utilities.FindAllEntitiesByDesignerName<CCSGameRulesProxy>("cs_gamerules").First().GameRules!;
-                    if ((buttons & PlayerButtons.Jump) != 0 && player.PlayerPawn.Value.GroundEntity.IsValid && !gamerules.FreezePeriod)
-                        _usersSettings[client]!.CountJumps++;
+                    if (client == IntPtr.Zero) return;
+                    if (!_usersSettings[client]!.IsShowSpeed) return;
+                    
                     player.PrintToCenter(
                         $"{Math.Round(player.PlayerPawn.Value.AbsVelocity.Length2D())}\n" +
                         $"Jumps: {_usersSettings[client]!.CountJumps}\n" +
@@ -52,7 +73,7 @@ public class Speedometer : BasePlugin
             var client = controller.EntityIndex!.Value.Value;
             if (client == IntPtr.Zero) return HookResult.Continue;
             _usersSettings[client]!.CountJumps = 0;
-            
+
             return HookResult.Continue;
         }));
         AddCommand("css_speed", "", ((player, info) =>
