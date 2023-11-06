@@ -16,7 +16,7 @@ public class Speedometer : BasePlugin
         {
             _usersSettings[slot + 1] = new UsersSettings { IsShowSpeed = true, CountJumps = 0 };
         }));
-        RegisterListener<Listeners.OnClientDisconnect>(slot => _usersSettings[slot + 1] = null);
+        RegisterListener<Listeners.OnClientDisconnectPost>(slot => _usersSettings[slot + 1] = null);
         RegisterListener<Listeners.OnTick>(() =>
         {
             for (var i = 1; i <= Server.MaxPlayers; ++i)
