@@ -8,4 +8,4 @@
 3. Unzip the archive and upload it to the game server
 
 # Commands
-`css_speed``!speed` - Enables/Disables speedometer display
+`css_speed` `!speed` - Enables/Disables speedometer display
