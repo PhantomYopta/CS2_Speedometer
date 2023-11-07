@@ -8,8 +8,9 @@ public class Speedometer : BasePlugin
     public override string ModuleName => "Speedometer by phantom";
     public override string ModuleVersion => "1.0.0";
 
-    public UsersSettings?[] _usersSettings = new UsersSettings?[65];
-
+    private UsersSettings?[] _usersSettings = new UsersSettings?[65];
+    private bool isHookEvent;
+    
     public override void Load(bool hotReload)
     {
         RegisterListener<Listeners.OnClientConnected>(((slot) =>
@@ -19,6 +20,10 @@ public class Speedometer : BasePlugin
         RegisterListener<Listeners.OnClientDisconnectPost>(slot => _usersSettings[slot + 1] = null);
         RegisterListener<Listeners.OnMapStart>((name =>
         {
+            if(isHookEvent) return;
+            
+            isHookEvent = true;
+            
             RegisterEventHandler<EventPlayerJump>(((@event, info) =>
             {
                 var controller = @event.Userid;
@@ -83,6 +88,11 @@ public class Speedometer : BasePlugin
             _usersSettings[client]!.IsShowSpeed = !_usersSettings[client]!.IsShowSpeed;
             player.PrintToChat(_usersSettings[client]!.IsShowSpeed ? "Speedometer: \x06On" : "Speedometer: \x02Off");
         }));
+    }
+
+    private HookResult EventBombPlanted(EventBombPlanted @event, GameEventInfo info)
+    {
+        throw new NotImplementedException();
     }
 }
 
