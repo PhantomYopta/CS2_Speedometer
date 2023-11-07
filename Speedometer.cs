@@ -35,7 +35,7 @@ public class Speedometer : BasePlugin
                 return HookResult.Continue;
             }));
         }));
-        RegisterEventHandler<EventRoundEnd>(((@event, info) =>
+        RegisterEventHandler<EventRoundStart>(((@event, info) =>
         {
             var playerEntities = Utilities.FindAllEntitiesByDesignerName<CCSPlayerController>("cs_player_controller");
             foreach (var player in playerEntities)
