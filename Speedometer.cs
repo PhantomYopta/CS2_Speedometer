@@ -53,7 +53,7 @@ public class Speedometer : BasePlugin
 
                 if (player is { IsValid: true, IsBot: false, PawnIsAlive: true })
                 {
-                    var buttons = player.Pawn.Value.MovementServices!.ButtonState.Value;
+                    var buttons = player.Buttons;
                     var client = player.EntityIndex!.Value.Value;
                     if (client == IntPtr.Zero) return;
                     if (!_usersSettings[client]!.IsShowSpeed) return;
