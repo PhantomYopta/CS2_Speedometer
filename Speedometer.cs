@@ -27,7 +27,7 @@ public class Speedometer : BasePlugin
             RegisterEventHandler<EventPlayerJump>(((@event, info) =>
             {
                 var controller = @event.Userid;
-                var client = controller.EntityIndex!.Value.Value;
+                var client = controller.Index;
 
                 if (client == IntPtr.Zero) return HookResult.Continue;
                 _usersSettings[client]!.CountJumps++;
@@ -40,7 +40,7 @@ public class Speedometer : BasePlugin
             var playerEntities = Utilities.FindAllEntitiesByDesignerName<CCSPlayerController>("cs_player_controller");
             foreach (var player in playerEntities)
             {
-                var client = player.EntityIndex!.Value.Value;
+                var client = player.Index;
                 _usersSettings[client]!.CountJumps = 0;
             }
             return HookResult.Continue;
@@ -54,19 +54,21 @@ public class Speedometer : BasePlugin
                 if (player is { IsValid: true, IsBot: false, PawnIsAlive: true })
                 {
                     var buttons = player.Buttons;
-                    var client = player.EntityIndex!.Value.Value;
+                    var client = player.Index;
                     if (client == IntPtr.Zero) return;
                     if (!_usersSettings[client]!.IsShowSpeed) return;
+
+                    if (player.PlayerPawn.Value == null) continue;
                     
-                    player.PrintToCenter(
-                        $"{Math.Round(player.PlayerPawn.Value.AbsVelocity.Length2D())}\n" +
-                        $"Jumps: {_usersSettings[client]!.CountJumps}\n" +
+                    player.PrintToCenterHtml(
+                        $"<pre>Speed: <font color='#00FF00'>{Math.Round(player.PlayerPawn.Value.AbsVelocity.Length2D())}</font><br>" +
+                        $"Jumps: <font color='#00ffea'>{_usersSettings[client]!.CountJumps}</font><br>" +
                         $"{((buttons & PlayerButtons.Left) != 0 ? "←" : "_")} " +
                         $"{((buttons & PlayerButtons.Forward) != 0 ? "W" : "_")} " +
-                        $"{((buttons & PlayerButtons.Right) != 0 ? "→" : "_")}\n" +
+                        $"{((buttons & PlayerButtons.Right) != 0 ? "→" : "_")}<br>" +
                         $"{((buttons & PlayerButtons.Moveleft) != 0 ? "A" : "_")} " +
                         $"{((buttons & PlayerButtons.Back) != 0 ? "S" : "_")} " +
-                        $"{((buttons & PlayerButtons.Moveright) != 0 ? "D" : "_")} ");
+                        $"{((buttons & PlayerButtons.Moveright) != 0 ? "D" : "_")} </pre>");
                 }
             }
         });
@@ -75,7 +77,7 @@ public class Speedometer : BasePlugin
             if (@event.Userid.Handle == IntPtr.Zero || @event.Userid.UserId == null) return HookResult.Continue;
 
             var controller = @event.Userid;
-            var client = controller.EntityIndex!.Value.Value;
+            var client = controller.Index;
             if (client == IntPtr.Zero) return HookResult.Continue;
             _usersSettings[client]!.CountJumps = 0;
 
@@ -84,7 +86,7 @@ public class Speedometer : BasePlugin
         AddCommand("css_speed", "", ((player, info) =>
         {
             if (player == null) return;
-            var client = player.EntityIndex!.Value.Value;
+            var client = player.Index;
             _usersSettings[client]!.IsShowSpeed = !_usersSettings[client]!.IsShowSpeed;
             player.PrintToChat(_usersSettings[client]!.IsShowSpeed ? "Speedometer: \x06On" : "Speedometer: \x02Off");
         }));
